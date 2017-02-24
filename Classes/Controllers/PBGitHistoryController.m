@@ -101,7 +101,7 @@
 	[historySplitView setHidden:YES];
 	[self performSelector:@selector(restoreSplitViewPositiion) withObject:nil afterDelay:0];
 
-	[upperToolbarView setTopShade:237/255.0 bottomShade:216/255.0];
+	[upperToolbarView setTopShade:237/255.0f bottomShade:216/255.0f];
 	[scopeBarView setTopColor:[NSColor colorWithCalibratedHue:0.579 saturation:0.068 brightness:0.898 alpha:1.000] 
 				  bottomColor:[NSColor colorWithCalibratedHue:0.579 saturation:0.119 brightness:0.765 alpha:1.000]];
 	[self updateBranchFilterMatrix];
@@ -189,7 +189,9 @@
 	[selectedBranchFilterItem setTitle:[repository.currentBranch title]];
 	[selectedBranchFilterItem sizeToFit];
 
-	[localRemoteBranchesFilterItem setTitle:[[repository.currentBranch ref] isRemote] ? @"Remote" : @"Local"];
+	[localRemoteBranchesFilterItem setTitle:[[repository.currentBranch ref] isRemote]
+		? NSLocalizedString(@"Remote", @"Filter button for all remote commits in history view")
+		: NSLocalizedString(@"Local", @"Filter button for all local commits in history view")];
 }
 
 - (PBGitCommit *) firstCommit
@@ -206,7 +208,7 @@
 	return [self.selectedCommits isEqualToArray:[commitController selectedObjects]];
 }
 
-- (void) setSelectedCommitDetailsIndex:(int)detailsIndex
+- (void) setSelectedCommitDetailsIndex:(NSInteger)detailsIndex
 {
 	if (selectedCommitDetailsIndex == detailsIndex)
 		return;
@@ -217,7 +219,7 @@
 	[self updateKeys];
 }
 
-- (int) selectedCommitDetailsIndex
+- (NSInteger) selectedCommitDetailsIndex
 {
 	return selectedCommitDetailsIndex;
 }
@@ -336,7 +338,7 @@
 		[menuItem setState:(self.selectedCommitDetailsIndex == kHistoryDetailViewIndex) ? NSOnState : NSOffState];
     } else if (action == @selector(setTreeView:)) {
 		[menuItem setState:(self.selectedCommitDetailsIndex == kHistoryTreeViewIndex) ? NSOnState : NSOffState];
-	} 
+	}
 	
 	if ([self respondsToSelector:action]) {
 		if (action == @selector(createBranch:) || action == @selector(createTag:)) {
@@ -344,6 +346,13 @@
 		}
 		
         return YES;
+	}
+
+	if (action == @selector(copy:)
+		|| action == @selector(copySHA:)
+		|| action == @selector(copyShortName:)
+		|| action == @selector(copyPatch:)) {
+		return self.commitController.selectedObjects.count > 0;
 	}
 	
     return [[self nextResponder] validateMenuItem:menuItem];
@@ -401,27 +410,25 @@
 	[searchController selectPreviousResult];
 }
 
-- (void) copyCommitInfo
+- (IBAction) copy:(id)sender
 {
 	[GitXCommitCopier putStringToPasteboard:[GitXCommitCopier toSHAAndHeadingString:commitController.selectedObjects]];
 }
 
-- (void) copyCommitSHA
+- (IBAction) copySHA:(id)sender
 {
 	[GitXCommitCopier putStringToPasteboard:[GitXCommitCopier toFullSHA:commitController.selectedObjects]];
 }
 
-- (void) copyCommitShortName
+- (IBAction) copyShortName:(id)sender
 {
 	[GitXCommitCopier putStringToPasteboard:[GitXCommitCopier toShortName:commitController.selectedObjects]];
 }
 
-- (void) copyCommitPatch
+- (IBAction) copyPatch:(id)sender
 {
 	[GitXCommitCopier putStringToPasteboard:[GitXCommitCopier toPatch:commitController.selectedObjects]];
 }
-
-
 
 - (IBAction) toggleQLPreviewPanel:(id)sender
 {
@@ -488,15 +495,15 @@
 	if (oldIndex == NSNotFound)
 		oldIndex = 0;
 
-	NSInteger newIndex = [[commitController selectionIndexes] firstIndex];
+	NSInteger newIndex = commitController.selectionIndexes.firstIndex;
 
 	if (newIndex > oldIndex) {
-        CGFloat sviewHeight = [[commitList superview] bounds].size.height;
-        CGFloat rowHeight = [commitList rowHeight];
-		NSInteger visibleRows = roundf(sviewHeight / rowHeight );
+        CGFloat sviewHeight = commitList.superview.bounds.size.height;
+        CGFloat rowHeight = commitList.rowHeight;
+		NSInteger visibleRows = lround(sviewHeight / rowHeight);
 		newIndex += (visibleRows - 1);
-		if (newIndex >= [[commitController content] count])
-			newIndex = [[commitController content] count] - 1;
+		if (newIndex >= [commitController.content count])
+			newIndex = [commitController.content count] - 1;
 	}
 
     if (newIndex != oldIndex) {
@@ -564,7 +571,7 @@
 #pragma mark Table Column Methods
 - (NSMenu *)tableColumnMenu
 {
-	NSMenu *menu = [[NSMenu alloc] initWithTitle:@"Table columns menu"];
+	NSMenu *menu = [[NSMenu alloc] initWithTitle:@""];
 	for (NSTableColumn *column in [commitList tableColumns]) {
 		NSMenuItem *item = [[NSMenuItem alloc] init];
 		[item setTitle:[[column headerCell] stringValue]];
@@ -582,7 +589,7 @@
 - (void)showCommitsFromTree:(id)sender
 {
 	NSString *searchString = [(NSArray *)[sender representedObject] componentsJoinedByString:@" "];
-	[searchController setHistorySearch:searchString mode:kGitXPathSearchMode];
+	[searchController setHistorySearch:searchString mode:PBHistorySearchModePath];
 }
 
 - (void) checkoutFiles:(id)sender
@@ -626,25 +633,40 @@
 		[filePaths addObject:[filePath stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]]];
 
 	BOOL multiple = [filePaths count] != 1;
-	NSMenuItem *historyItem = [[NSMenuItem alloc] initWithTitle:multiple? @"Show history of files" : @"Show history of file"
+	NSString *historyItemTitle = multiple
+		? NSLocalizedString(@"Show history of files", @"Show history menu item for multiple files")
+		: NSLocalizedString(@"Show history of file", @"Show history menu item for single file");
+	NSMenuItem *historyItem = [[NSMenuItem alloc] initWithTitle:historyItemTitle
 														 action:@selector(showCommitsFromTree:)
 												  keyEquivalent:@""];
 
 	PBGitRef *headRef = [[repository headRef] ref];
 	NSString *headRefName = [headRef shortName];
-	NSString *diffTitle = [NSString stringWithFormat:@"Diff %@ with %@", multiple ? @"files" : @"file", headRefName];
+	NSString *diffTitleFormat = multiple
+		? NSLocalizedString(@"Diff files with %@", @"Diff with ref menu item for multiple files")
+		: NSLocalizedString(@"Diff file with %@", @"Diff with ref menu item for single file");
+	NSString *diffTitle = [NSString stringWithFormat:diffTitleFormat, headRefName];
 	BOOL isHead = [self.selectedCommits.firstObject.OID isEqual:repository.headOID];
 	NSMenuItem *diffItem = [[NSMenuItem alloc] initWithTitle:diffTitle
 													  action:isHead ? nil : @selector(diffFilesAction:)
 											   keyEquivalent:@""];
 
-	NSMenuItem *checkoutItem = [[NSMenuItem alloc] initWithTitle:multiple ? @"Checkout files" : @"Checkout file"
+	NSString *checkoutItemTitle = multiple
+		? NSLocalizedString(@"Checkout files", @"Checkout menu item for multiple files")
+		: NSLocalizedString(@"Checkout file", @"Checkout menu item for single file");
+	NSMenuItem *checkoutItem = [[NSMenuItem alloc] initWithTitle:checkoutItemTitle
 														  action:@selector(checkoutFiles:)
 												   keyEquivalent:@""];
-	NSMenuItem *finderItem = [[NSMenuItem alloc] initWithTitle:@"Show in Finder"
+	
+	NSString *finderItemTitle = NSLocalizedString(@"Show in Finder", @"Show in Finder menu item");
+	NSMenuItem *finderItem = [[NSMenuItem alloc] initWithTitle:finderItemTitle
 														action:@selector(showInFinderAction:)
 												 keyEquivalent:@""];
-	NSMenuItem *openFilesItem = [[NSMenuItem alloc] initWithTitle:multiple? @"Open Files" : @"Open File"
+	
+	NSString *openFilesItemTitle = multiple
+		? NSLocalizedString(@"Open Files", @"Open menu item for multiple files")
+		: NSLocalizedString(@"Open File", @"Open menu item for single file");
+	NSMenuItem *openFilesItem = [[NSMenuItem alloc] initWithTitle:openFilesItemTitle
 														   action:@selector(openFilesAction:)
 													keyEquivalent:@""];
 
@@ -688,15 +710,15 @@
 // NSSplitView does not save and restore the position of the SplitView correctly so do it manually
 - (void)saveSplitViewPosition
 {
-	float position = [[[historySplitView subviews] objectAtIndex:0] frame].size.height;
-	[[NSUserDefaults standardUserDefaults] setFloat:position forKey:kHistorySplitViewPositionDefault];
+	CGFloat position = [[historySplitView subviews] objectAtIndex:0].frame.size.height;
+	[[NSUserDefaults standardUserDefaults] setDouble:position forKey:kHistorySplitViewPositionDefault];
 	[[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 // make sure this happens after awakeFromNib
 - (void)restoreSplitViewPositiion
 {
-	float position = [[NSUserDefaults standardUserDefaults] floatForKey:kHistorySplitViewPositionDefault];
+	CGFloat position = [[NSUserDefaults standardUserDefaults] doubleForKey:kHistorySplitViewPositionDefault];
 	if (position < 1.0)
 		position = 175;
 

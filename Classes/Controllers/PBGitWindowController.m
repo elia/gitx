@@ -240,7 +240,7 @@
 	[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-- (void)setHistorySearch:(NSString *)searchString mode:(NSInteger)mode
+- (void)setHistorySearch:(NSString *)searchString mode:(PBHistorySearchMode)mode
 {
 	[sidebarController setHistorySearch:searchString mode:mode];
 }
@@ -371,7 +371,7 @@
 {
 	NSRect newFrame = [sender frame];
 
-	float dividerThickness = [sender dividerThickness];
+	CGFloat dividerThickness = [sender dividerThickness];
 
 	NSView *sourceView = [[sender subviews] objectAtIndex:0];
 	NSRect sourceFrame = [sourceView frame];

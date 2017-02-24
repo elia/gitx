@@ -36,10 +36,10 @@
 #define kGitXSearchDirectionNext 1
 #define kGitXSearchDirectionPrevious -1
 
-#define kGitXBasicSearchLabel @"Subject, Author, SHA"
-#define kGitXPickaxeSearchLabel @"Commit (pickaxe)"
-#define kGitXRegexSearchLabel @"Commit (pickaxe regex)"
-#define kGitXPathSearchLabel @"File path"
+#define kGitXBasicSearchLabel NSLocalizedString(@"Subject, Author, SHA", @"Option in Search menu to search for subject, author or SHA")
+#define kGitXPickaxeSearchLabel NSLocalizedString(@"Commit (pickaxe)", @"Option in Search menu to use the pickaxe search")
+#define kGitXRegexSearchLabel NSLocalizedString(@"Commit (pickaxe regex)", @"Option in Search menu to use the pickaxe search with regular expressions")
+#define kGitXPathSearchLabel NSLocalizedString(@"File path", @"Option in Search menu to search for file paths in the commit")
 
 #define kGitXSearchArrangedObjectsContext @"GitXSearchArrangedObjectsContext"
 
@@ -70,7 +70,7 @@
 
 - (void)selectSearchMode:(id)sender
 {
-	self.searchMode = [(NSView*)sender tag];
+	[self setSearchMode:PBSearchModeForInteger([(NSView*)sender tag])];
 	[self updateSearch:self];
 }
 
@@ -106,13 +106,13 @@
 
 - (IBAction)updateSearch:(id)sender
 {
-	if (self.searchMode == kGitXBasicSeachMode)
+	if (self.searchMode == PBHistorySearchModeBasic)
 		[self startBasicSearch];
 	else
 		[self startBackgroundSearch];
 }
 
-- (void)setHistorySearch:(NSString *)searchString mode:(NSInteger)mode
+- (void)setHistorySearch:(NSString *)searchString mode:(PBHistorySearchMode)mode
 {
 	if (searchString && ![searchString isEqualToString:@""]) {
 		self.searchMode = mode;
@@ -125,7 +125,7 @@
 - (void)awakeFromNib
 {
 	[self setupSearchMenuTemplate];
-	self.searchMode = [PBGitDefaults historySearchMode];
+	self.searchMode = PBSearchModeForInteger([PBGitDefaults historySearchMode]);
 
 	[self updateUI];
 
@@ -194,12 +194,14 @@
 	NSUInteger numberOfMatches = [results count];
 
 	if (numberOfMatches == 0)
-		return @"Not found";
+		return NSLocalizedString(@"Not found", @"Search count (left of search field): no results");
 
 	if (numberOfMatches == 1)
-		return @"1 match";
+		return NSLocalizedString(@"1 match", @"Search count (left of search field): exactly one result");
 
-	return [NSString stringWithFormat:@"%lu matches", numberOfMatches];
+	return [NSString stringWithFormat:
+			NSLocalizedString(@"%lu matches", @"Search count (left of search field): number of results"),
+			numberOfMatches];
 }
 
 - (void)updateUI
@@ -234,37 +236,37 @@
 
 - (void)setupSearchMenuTemplate
 {
-	NSMenu *searchMenu = [[NSMenu alloc] initWithTitle:@"Search Menu"];
+	NSMenu *searchMenu = [[NSMenu alloc] initWithTitle:NSLocalizedString(@"Search Menu", @"Title of the Search menu.")];
     NSMenuItem *item;
 
 	item = [[NSMenuItem alloc] initWithTitle:kGitXBasicSearchLabel action:@selector(selectSearchMode:) keyEquivalent:@""];
 	[item setTarget:self];
-    [item setTag:kGitXBasicSeachMode];
+    [item setTag:PBHistorySearchModeBasic];
     [searchMenu addItem:item];
 
 	item = [[NSMenuItem alloc] initWithTitle:kGitXPickaxeSearchLabel action:@selector(selectSearchMode:) keyEquivalent:@""];
 	[item setTarget:self];
-    [item setTag:kGitXPickaxeSearchMode];
+    [item setTag:PBHistorySearchModePickaxe];
     [searchMenu addItem:item];
 
 	item = [[NSMenuItem alloc] initWithTitle:kGitXRegexSearchLabel action:@selector(selectSearchMode:) keyEquivalent:@""];
 	[item setTarget:self];
-    [item setTag:kGitXRegexSearchMode];
+    [item setTag:PBHistorySearchModeRegex];
     [searchMenu addItem:item];
 
 	item = [[NSMenuItem alloc] initWithTitle:kGitXPathSearchLabel action:@selector(selectSearchMode:) keyEquivalent:@""];
 	[item setTarget:self];
-    [item setTag:kGitXPathSearchMode];
+    [item setTag:PBHistorySearchModePath];
     [searchMenu addItem:item];
 
     item = [NSMenuItem separatorItem];
     [searchMenu addItem:item];
 
-	item = [[NSMenuItem alloc] initWithTitle:@"Recent Searches" action:NULL keyEquivalent:@""];
+	item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Recent Searches", @"Searches menu: title of inactive headline item for Recent Searches section") action:NULL keyEquivalent:@""];
     [item setTag:NSSearchFieldRecentsTitleMenuItemTag];
     [searchMenu addItem:item];
 
-    item = [[NSMenuItem alloc] initWithTitle:@"Recents" action:NULL keyEquivalent:@""];
+    item = [[NSMenuItem alloc] initWithTitle:@"" action:NULL keyEquivalent:@""];
     [item setTag:NSSearchFieldRecentsMenuItemTag];
     [searchMenu addItem:item];
 
@@ -272,11 +274,11 @@
     [item setTag:NSSearchFieldRecentsTitleMenuItemTag];
     [searchMenu addItem:item];
 
-	item = [[NSMenuItem alloc] initWithTitle:@"Clear Recent Searches" action:NULL keyEquivalent:@""];
+	item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"Clear Recent Searches", @"Searches menu: title of clear recent searches item") action:NULL keyEquivalent:@""];
     [item setTag:NSSearchFieldClearRecentsMenuItemTag];
     [searchMenu addItem:item];
 
-	item = [[NSMenuItem alloc] initWithTitle:@"No Recent Searches" action:NULL keyEquivalent:@""];
+	item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString(@"No Recent Searches", @"Searches menu: title of dummy item displayed in recent searches section when there are no recent searches") action:NULL keyEquivalent:@""];
     [item setTag:NSSearchFieldNoRecentsMenuItemTag];
     [searchMenu addItem:item];
 
@@ -289,35 +291,31 @@
 	if (!searchMenu)
 		return;
 
-	NSMenuItem *item;
-
-	item = [searchMenu itemWithTag:kGitXBasicSeachMode];
-	[item setState:(searchMode == kGitXBasicSeachMode) ? NSOnState : NSOffState];
-
-	item = [searchMenu itemWithTag:kGitXPickaxeSearchMode];
-	[item setState:(searchMode == kGitXPickaxeSearchMode) ? NSOnState : NSOffState];
-
-	item = [searchMenu itemWithTag:kGitXRegexSearchMode];
-	[item setState:(searchMode == kGitXRegexSearchMode) ? NSOnState : NSOffState];
-
-	item = [searchMenu itemWithTag:kGitXPathSearchMode];
-	[item setState:(searchMode == kGitXPathSearchMode) ? NSOnState : NSOffState];
+	[self updateSearchModeMenuItemWithTag:PBHistorySearchModeBasic inMenu:searchMenu];
+	[self updateSearchModeMenuItemWithTag:PBHistorySearchModePickaxe inMenu:searchMenu];
+	[self updateSearchModeMenuItemWithTag:PBHistorySearchModeRegex inMenu:searchMenu];
+	[self updateSearchModeMenuItemWithTag:PBHistorySearchModePath inMenu:searchMenu];
 
     [[searchField cell] setSearchMenuTemplate:searchMenu];
 
 	[PBGitDefaults setHistorySearchMode:searchMode];
 }
 
+- (void) updateSearchModeMenuItemWithTag:(PBHistorySearchMode)menuItemSearchMode inMenu:(NSMenu *) searchMenu {
+	NSMenuItem * menuItem = [searchMenu itemWithTag:menuItemSearchMode];
+	[menuItem setState:(searchMode == menuItemSearchMode) ? NSOnState : NSOffState];
+}
+
 - (void)updateSearchPlaceholderString
 {
 	switch (self.searchMode) {
-		case kGitXPickaxeSearchMode:
+		case PBHistorySearchModePickaxe:
 			[[searchField cell] setPlaceholderString:kGitXPickaxeSearchLabel];
 			break;
-		case kGitXRegexSearchMode:
+		case PBHistorySearchModeRegex:
 			[[searchField cell] setPlaceholderString:kGitXRegexSearchLabel];
 			break;
-		case kGitXPathSearchMode:
+		case PBHistorySearchModePath:
 			[[searchField cell] setPlaceholderString:kGitXPathSearchLabel];
 			break;
 		default:
@@ -333,11 +331,8 @@
 
 - (void)setSearchMode:(PBHistorySearchMode)mode
 {
-	if ((mode < kGitXBasicSeachMode) || (mode >= kGitXMaxSearchMode))
-		mode = kGitXBasicSeachMode;
-
 	searchMode = mode;
-	[PBGitDefaults setHistorySearchMode:searchMode];
+	[PBGitDefaults setHistorySearchMode:mode];
 
 	[self updateSearchMenuState];
 	[self updateSearchPlaceholderString];
@@ -414,12 +409,12 @@
 
 	NSMutableArray *searchArguments = [NSMutableArray arrayWithObjects:@"log", @"--pretty=format:%H", nil];
 	switch (self.searchMode) {
-		case kGitXRegexSearchMode:
+		case PBHistorySearchModeRegex:
 			[searchArguments addObject:@"--pickaxe-regex"];
-		case kGitXPickaxeSearchMode:
+		case PBHistorySearchModePickaxe:
 			[searchArguments addObject:[NSString stringWithFormat:@"-S%@", searchString]];
 			break;
-		case kGitXPathSearchMode:
+		case PBHistorySearchModePath:
 			[searchArguments addObject:@"--"];
 			[searchArguments addObjectsFromArray:[searchString componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]];
 			break;
@@ -525,17 +520,8 @@
 {
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animation];
 	animation.duration = 1.0f;
-	animation.values = [NSArray arrayWithObjects:
-						[NSNumber numberWithFloat:1.0f],
-						[NSNumber numberWithFloat:1.0f],
-						[NSNumber numberWithFloat:0.0f],
-						[NSNumber numberWithFloat:0.0f], nil];
-	animation.keyTimes = [NSArray arrayWithObjects:
-						  [NSNumber numberWithFloat:0.1f],
-						  [NSNumber numberWithFloat:0.3f],
-						  [NSNumber numberWithFloat:0.7f],
-						  [NSNumber numberWithFloat:animation.duration], nil];
-
+	animation.values = @[@1.0f, @1.0f, @0.0f, @0.0f];
+	animation.keyTimes = @[@0.1f, @0.3f, @0.7f, [NSNumber numberWithDouble:animation.duration]];
 	return animation;
 }
 

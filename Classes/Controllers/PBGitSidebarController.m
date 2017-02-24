@@ -214,7 +214,7 @@
 	[sourceView reloadData];
 }
 
-- (void)setHistorySearch:(NSString *)searchString mode:(NSInteger)mode
+- (void)setHistorySearch:(NSString *)searchString mode:(PBHistorySearchMode)mode
 {
 	[historyViewController.searchController setHistorySearch:searchString mode:mode];
 }
@@ -356,7 +356,7 @@
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(id)item
 {
-	return [[(PBSourceViewItem *)item sortedChildren] count];
+	return [[(PBSourceViewItem *)item sortedChildren] count] > 0;
 }
 
 - (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(id)item
