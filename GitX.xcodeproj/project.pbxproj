@@ -1712,7 +1712,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 0.12;
+				CURRENT_PROJECT_VERSION = 0.15.2317;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1729,7 +1729,7 @@
 					"\"$(PROJECT_DIR)/External/objective-git/External/libgit2/include\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CFLAGS = "-Werror=incompatible-pointer-types";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -1755,7 +1755,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CURRENT_PROJECT_VERSION = 0.12;
+				CURRENT_PROJECT_VERSION = 0.15.2317;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -1770,7 +1770,7 @@
 					"\"$(PROJECT_DIR)/External/objective-git/External/libgit2/include\"",
 				);
 				LD_RUNPATH_SEARCH_PATHS = "@loader_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				OTHER_CFLAGS = "-Werror=incompatible-pointer-types";
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = macosx;
