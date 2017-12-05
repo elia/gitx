@@ -299,6 +299,11 @@ NS_ENUM(NSUInteger, PBGitIndexOperation) {
 		[arguments addObject:parent];
 	}
 
+	if (/* preference is set */ true) {
+		// commit-tree does not support the long --gpg-sign option for some reason
+		[arguments addObject:@"-S"];
+	}
+
 	[self postCommitUpdate:@"Creating commit"];
 	int ret = 1;
 	
