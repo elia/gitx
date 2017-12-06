@@ -63,23 +63,26 @@
 
         // draw a vertical line after the given size (used as an indicator
         // for the first line of the commit message)
-        [[NSColor lightGrayColor] set];
         padding = [[self textContainer] lineFragmentPadding];
         line.origin.x = padding + lineWidth;
         line.origin.y = 0;
-        line.size.width = 1;
+        line.size.width = 5;
         line.size.height = textViewHeight;
+		// [[NSColor lightGrayColor] set];
+		[[[NSColor systemBlueColor] colorWithAlphaComponent:0.0] setFill];
         NSRectFill(line);
 
         // and one for the body of the commit message
         lineWidth = characterWidth * [PBGitDefaults commitMessageViewVerticalBodyLineLength];
-        [[NSColor darkGrayColor] set];
         padding = [[self textContainer] lineFragmentPadding];
         line.origin.x = padding + lineWidth;
         line.origin.y = 0;
         line.size.width = 1;
         line.size.height = textViewHeight;
-        NSRectFill(line);
+		// [[NSColor darkGrayColor] setFill];
+		// [[NSColor colorWithCalibratedRed:(0.0) green:(1.0) blue:(0.0) alpha:(0.2)] setFill];
+		[[NSColor systemRedColor] setFill];
+		NSRectFill(line);
     }
 }
 
