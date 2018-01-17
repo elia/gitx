@@ -59,7 +59,7 @@
     if ([PBGitDefaults commitMessageViewHasVerticalLine]) {
 		NSGraphicsContext* linesContext = [NSGraphicsContext currentContext];
 		[linesContext saveGraphicsState];
-		
+
         CGFloat characterWidth = [@" " sizeWithAttributes:[self typingAttributes]].width;
         CGFloat lineWidth = characterWidth * [PBGitDefaults commitMessageViewVerticalLineLength];
         NSRect line;
@@ -71,10 +71,10 @@
         padding = [[self textContainer] lineFragmentPadding];
         line.origin.x = padding + lineWidth;
         line.origin.y = 0;
-        line.size.width = 5;
+        line.size.width = 0.25;
         line.size.height = textViewHeight;
 		// [[NSColor lightGrayColor] set];
-		[[[NSColor systemBlueColor] colorWithAlphaComponent:0.0] setFill];
+		[[NSColor systemBlueColor] setFill];
         NSRectFill(line);
 
         // and one for the body of the commit message
@@ -82,16 +82,16 @@
         padding = [[self textContainer] lineFragmentPadding];
         line.origin.x = padding + lineWidth;
         line.origin.y = 0;
-        line.size.width = 1;
+        line.size.width = 0.25;
         line.size.height = textViewHeight;
 		// [[NSColor darkGrayColor] setFill];
 		// [[NSColor colorWithCalibratedRed:(0.0) green:(1.0) blue:(0.0) alpha:(0.2)] setFill];
 		[[NSColor systemRedColor] setFill];
 		NSRectFill(line);
-		
+
 		[linesContext restoreGraphicsState];
     }
-	
+
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
