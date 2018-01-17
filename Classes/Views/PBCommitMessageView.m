@@ -51,10 +51,15 @@
 
 - (void)drawRect:(NSRect)aRect
 {
+	//self.backgroundColor = [[NSColor whiteColor] colorWithAlphaComponent:1.0];
+	//NSRectFill(aRect);
 	[super drawRect:aRect];
 
-    if ([PBGitDefaults commitMessageViewHasVerticalLine]) {
 
+    if ([PBGitDefaults commitMessageViewHasVerticalLine]) {
+		NSGraphicsContext* linesContext = [NSGraphicsContext currentContext];
+		[linesContext saveGraphicsState];
+		
         CGFloat characterWidth = [@" " sizeWithAttributes:[self typingAttributes]].width;
         CGFloat lineWidth = characterWidth * [PBGitDefaults commitMessageViewVerticalLineLength];
         NSRect line;
@@ -83,7 +88,10 @@
 		// [[NSColor colorWithCalibratedRed:(0.0) green:(1.0) blue:(0.0) alpha:(0.2)] setFill];
 		[[NSColor systemRedColor] setFill];
 		NSRectFill(line);
+		
+		[linesContext restoreGraphicsState];
     }
+	
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
