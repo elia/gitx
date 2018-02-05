@@ -325,7 +325,7 @@
 	if ([[sheet suppressionButton] state] == NSOnState)
         [PBGitDefaults suppressDialogWarningForDialog:kDialogDeleteRef];
 
-	if (returnCode == NSAlertDefaultReturn) {
+	if (returnCode == NSAlertFirstButtonReturn) {
 		PBGitRef *ref = (__bridge PBGitRef *)contextInfo;
 		[historyController.repository deleteRef:ref];
 	}
