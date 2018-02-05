@@ -20,7 +20,7 @@
 	NSArray<NSString *> *commitStrings = [self transformCommits:commits with:^(PBGitCommit * commit) {
 		return commit.SHA;
 	}];
-	
+
 	return [commitStrings componentsJoinedByString:@"\n"];
 }
 
@@ -28,13 +28,14 @@
 	NSArray<NSString *> *commitStrings = [self transformCommits:commits with:^(PBGitCommit * commit) {
 		return commit.shortName;
 	}];
-	
+
 	return [commitStrings componentsJoinedByString:@" "];
 }
 
 + (NSString *) toSHAAndHeadingString:(NSArray<PBGitCommit *> *)commits {
 	NSArray<NSString *> *commitStrings = [self transformCommits:commits with:^(PBGitCommit * commit) {
-		return [NSString stringWithFormat:@"%@ (%@)", [commit.SHA substringToIndex:10], commit.subject];
+		// return [NSString stringWithFormat:@"%@ (%@)", [commit.SHA substringToIndex:10], commit.subject];
+		return [NSString stringWithFormat:@"%@\n\ncommit %@", [commit.subject, commit.SHA substringToIndex:10]];
 	}];
 
 	return [commitStrings componentsJoinedByString:@"\n"];
@@ -44,7 +45,7 @@
 	NSArray<NSString *> *commitStrings = [self transformCommits:commits with:^(PBGitCommit * commit) {
 		return commit.patch;
 	}];
-	
+
 	return [commitStrings componentsJoinedByString:@"\n\n\n"];
 }
 
@@ -53,12 +54,12 @@
 # pragma mark Helpers
 
 + (NSArray<NSString *> *) transformCommits:(NSArray<PBGitCommit *> *)commits with:(NSString *(^)(PBGitCommit *  commit))transformer {
-	
+
 	NSMutableArray *strings = [NSMutableArray arrayWithCapacity:commits.count];
 	[commits enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(PBGitCommit * _Nonnull commit, NSUInteger idx, BOOL * _Nonnull stop) {
 		[strings addObject:transformer(commit)];
 	}];
-	
+
 	return strings;
 }
 
