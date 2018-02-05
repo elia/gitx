@@ -35,7 +35,7 @@
 + (NSString *) toSHAAndHeadingString:(NSArray<PBGitCommit *> *)commits {
 	NSArray<NSString *> *commitStrings = [self transformCommits:commits with:^(PBGitCommit * commit) {
 		// return [NSString stringWithFormat:@"%@ (%@)", [commit.SHA substringToIndex:10], commit.subject];
-		return [NSString stringWithFormat:@"%@\n\ncommit %@", [commit.subject, commit.SHA substringToIndex:10]];
+		return commit.subject;
 	}];
 
 	return [commitStrings componentsJoinedByString:@"\n"];
